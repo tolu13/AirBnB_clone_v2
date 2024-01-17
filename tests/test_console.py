@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Test console"""
+"""Unittest for console"""
 import os
 import uuid
 import unittest
