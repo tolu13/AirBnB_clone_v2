@@ -2,19 +2,12 @@
 """This module defines a class to manage file storage for hbnb clone"""
 import json
 from models.base_model import BaseModel
-        from models.user import User
-        from models.place import Place
-        from models.state import State
-        from models.city import City
-        from models.amenity import Amenity
-        from models.review import Review
-
-        classes = {
-                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
-                    'State': State, 'City': City, 'Amenity': Amenity,
-                    'Review': Review
-                  }
-
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
 
 
 class FileStorage:
@@ -23,44 +16,20 @@ class FileStorage:
     __objects = {}
 
     def all(self, cls=None):
-<<<<<<< HEAD
-        """ Returns a dictionary of all objects """
-        if cls is None:
-            return self.__objects
-        else:
-            filtered_objects = {k: v for k, v in self.__objects.items()
-                    if isinstance(v, cls)}
-            return filtered_objects
-=======
         """Returns a dictionary of models currently in storage"""
-        if not cls:
-            return self .__objects
-        elif type(cls) == str:
-            return {k: v for k, v in self.__objects.items()
-                    if v.__class__.__name__ == cls}
-        else:
-            return {k: v for k, v in self.__objects.items()
-                    if v.__class__ == cls}
-
->>>>>>> 061ea480d4db35266b35c89f11549e4d2dc7aa6d
+        if cls:
+            if type(cls) == str:
+                cls = eval(cls)
+            my_dict = {}
+            for key, value in self.__objects.items():
+                if type(value) == cls:
+                    my_dict[key] = value
+            return my_dict
+        return self.__objects
 
     def new(self, obj):
-        """ Sets in __objects the obj with key <obj class name>.id """
-        key = "{}.{}".format(obj.__class__.__name__, obj.id)
-        slef.__objects[key] = obj
-
-    def delete(self, obj=None):
-        """ Deletes obj from __objects if it's inside """
-        if obj is not None:
-            key = "{}.{}".format(obj.__class__.__name__, obj.id)
-            if key in self.__objects:
-                del self.__objects[key]
-
-    def delete(self, obj=None):
-        """delete obj from __objects if it’s inside"""
-        if obj is not None:
-            del self.__objects[obj.__class__.__name__ + '.' + obj.id]
-            self.save()
+        """Adds new object to storage dictionary"""
+        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
 
     def save(self):
         """Saves storage dictionary to file"""
@@ -69,12 +38,33 @@ class FileStorage:
             temp.update(FileStorage.__objects)
             for key, val in temp.items():
                 temp[key] = val.to_dict()
-            j
+            json.dump(temp, f)
+
+    def reload(self):
+        """Loads storage dictionary from file"""
+
+        classes = {
+                    'BaseModel': BaseModel, 'User': User, 'Place': Place,
+                    'State': State, 'City': City, 'Amenity': Amenity,
+                    'Review': Review
+                  }
         try:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
-                        self.all()[key] = classes[val['__class__']](**val)
+                    self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
+
+    def delete(self, obj=None):
+        """Deletes and object from __objects"""
+        if (obj):
+            key = "{}.{}".format(type(obj).__name__, obj.id)
+            del self.__objects[key]
+
+    def close(self):
+        """Calls reload method for deserializing
+        the JSON file to objects
+        """
+        self.reload()
