@@ -7,7 +7,7 @@ This script starts a Flask web application with specific routes.
 from flask import Flask
 from urllib.parse import unquote
 
-app = Flask(__name__)
+app = Flask("__name__")
 
 
 @app.route('/', strict_slashes=False)
